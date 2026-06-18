@@ -1,3 +1,6 @@
+from flask import Flask
+
+
 def main():
     print("Hello from tekken-matchups!")
 
