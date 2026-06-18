@@ -3,3 +3,6 @@ serve:
 
 scrape:
     uv run python src/scrape_forward.py
+
+aggregate:
+    uv run python src/aggregate_matchups.py
