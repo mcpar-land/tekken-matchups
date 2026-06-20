@@ -18,8 +18,9 @@
       {
         devShells.default = pkgs.mkShell {
           packages = with pkgs; [
-            hurl
             just
+            watchexec
+            live-server
           ];
         };
       }
