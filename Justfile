@@ -1,5 +1,5 @@
 serve:
-    uv run python src/main.py
+    uv run flask --app src/server.py run --debug
 
 scrape:
     uv run python src/scrape_forward.py
