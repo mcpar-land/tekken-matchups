@@ -1,0 +1,38 @@
+{% extends "base.html.jinja" %}
+{% block content %}
+{% include "goto-dropdowns.html.jinja" %}
+<table>
+  <thead>
+    <tr>
+      <th></th>
+      {% for chara in chara_names %}
+      <th class="chara-header">{{chara}}</th>
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for c_a in chara_names %}
+    <tr>
+      <th scope="row">{{c_a}}</th>
+      {% for c_b in chara_names %}
+        {% if (c_a, c_b) in matchup_diffs %}
+          {% set c = matchup_diffs[(c_a, c_b)] %}
+          <td class="cell" style="background-color: {{c.cell_color}}">
+            <span>{{ c.cell_body }}</span>
+            {% if c_a != c_b %}
+              <div class="cell-tooltip">
+                <div><b>{{c.c1}}</b> has a</div>
+                <div><b>{{c.matchup_diff}}</b> matchup</div>
+                <div>versus <b>{{c.c2}}</b></div>
+              </div>
+            {% endif %}
+          </td>
+        {% else %}
+          <td class="cell cell-gray"></td>
+        {% endif %}
+      {% endfor %}
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

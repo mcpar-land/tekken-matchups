@@ -13,7 +13,7 @@ build:
     cp -r ./static/. ./output/
 
 scrape:
-    uv run python src/scrape_forward.py
+    uv run python -m tekken-matchups.scrape_forward
 
 aggregate:
-    uv run python src/aggregate_matchups.py
+    uv run python -m tekken-matchups.aggregate_matchups
