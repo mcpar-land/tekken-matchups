@@ -11,6 +11,8 @@ build:
     mkdir -p output
     uv run python -m tekken-matchups.build
     cp -r ./static/. ./output/
+clear_build:
+    rm -rf output/*
 
 scrape:
     uv run python -m tekken-matchups.scrape_forward

@@ -2,38 +2,41 @@ import polars as pl
 from typing import Any
 from jinja2 import Environment, PackageLoader, select_autoescape
 import os.path
-from dataclasses import dataclass
 
 templ_env = Environment(
     loader=PackageLoader("tekken-matchups"),
     autoescape=select_autoescape(),
 )
 
-df_matchups = (
-    pl.read_parquet("./aggregate/matchup_diffs.parquet")
-    .join(pl.read_csv("ranks.csv"), left_on="min_rank", right_on="rank_id")
-    .with_columns(
-        game_version_label=pl.col("game_version")
-        .cast(pl.String)
-        .str.replace(r"(\d)(\d{2})(\d{2})", "$1.$2.$3"),
-    )
+df_versions = pl.read_csv(
+    "game_versions.csv",
+    schema={
+        "game_version": pl.String,
+        "version_name": pl.String,
+        "release_date": pl.Date,
+        "significant_balance_update": pl.Boolean,
+        "significant_rank": pl.Int64,
+        "patch_notes": pl.String,
+    },
+)
+
+df_game_counts_by_version = pl.read_parquet(
+    "./aggregate/game_counts_by_version.parquet"
+)
+
+
+df_matchups = pl.read_parquet("./aggregate/matchup_diffs.parquet").join(
+    df_versions,
+    left_on="significant_version",
+    right_on="game_version",
+    how="left",
 )
 
 game_versions: list[tuple[str, str]] = (
-    df_matchups.lazy()
-    .select("game_version", "game_version_label")
+    df_versions.filter(pl.col("significant_balance_update"))
+    .select("game_version", "version_name")
     .unique()
     .sort("game_version")
-    .collect()
-    .rows(named=False)
-)
-
-ranks: list[tuple[str, str]] = (
-    df_matchups.lazy()
-    .select("min_rank", "rank_name")
-    .unique()
-    .sort("min_rank")
-    .collect()
     .rows(named=False)
 )
 
@@ -54,9 +57,7 @@ write_page(
     "index.html",
     game_versions=game_versions,
     df_matchups=df_matchups,
-    ranks=ranks,
-    selected_game_verison="grah",
-    selected_rank="0",
+    selected_game_verison=None,
 )
 
 COLOR_MIN = (0xFF, 0x00, 0x00)
@@ -73,13 +74,15 @@ class MatchupCell:
         c1: str,
         c2: str,
         matchup_diff: float,
+        n_games: int,
         global_min_diff: float,
         global_max_diff: float,
     ):
         self.c1 = c1
         self.c2 = c2
         self.matchup_diff = matchup_diff
-        self.cell_body = f"{matchup_diff: >4.1f}".replace(" ", "&nbsp;")
+        self.n_games = n_games
+        self.cell_body = f"{matchup_diff: >+4.1f}".replace(" ", "&nbsp;")
 
         if matchup_diff < 0.0:
             global_max_diff = 0.0
@@ -105,13 +108,14 @@ class MatchupCell:
         self.cell_color = "#{:02x}{:02x}{:02x}".format(r, g, b)
 
 
-for (game_version, game_version_label, rank, rank_label), df in df_matchups.group_by(
-    "game_version", "game_version_label", "min_rank", "rank_name"
+for (significant_version, version_name), df in df_matchups.group_by(
+    "significant_version", "version_name"
 ):
     df = df.select(
         "chara_name",
         "chara_name_opp",
         pl.col("matchup_diff").round(3),
+        "n_games",
     )
     global_min_diff = df["matchup_diff"].min()
     global_max_diff = df["matchup_diff"].max()
@@ -119,11 +123,12 @@ for (game_version, game_version_label, rank, rank_label), df in df_matchups.grou
     assert isinstance(global_max_diff, float)
 
     matchup_diffs: dict[tuple[str, str], MatchupCell] = {}
-    for chara_name, chara_name_opp, matchup_diff in df.iter_rows():
+    for chara_name, chara_name_opp, matchup_diff, n_games in df.iter_rows():
         matchup_diffs[(chara_name, chara_name_opp)] = MatchupCell(
             chara_name,
             chara_name_opp,
             matchup_diff,
+            n_games,
             global_min_diff,
             global_max_diff,
         )
@@ -132,12 +137,10 @@ for (game_version, game_version_label, rank, rank_label), df in df_matchups.grou
 
     write_page(
         "chart.html.jinja",
-        os.path.join("chart", str(game_version), str(rank) + ".html"),
+        os.path.join("chart", str(significant_version) + ".html"),
         game_versions=game_versions,
-        ranks=ranks,
         df_test=df,
-        selected_game_version=game_version,
-        selected_rank=rank,
+        selected_game_version=significant_version,
         chara_names=chara_names,
         matchup_diffs=matchup_diffs,
     )

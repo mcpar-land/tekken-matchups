@@ -77,6 +77,10 @@ tbody th {
   font-family: monospace;
 }
 
+.cell-mirror {
+  background-color: gray;
+}
+
 .cell-tooltip {
   position: absolute;
   font-family: sans-serif;
@@ -94,6 +98,10 @@ tbody th {
 
 .cell-tooltip div {
   white-space: nowrap;
+}
+
+.cell-tooltip .smaller {
+  font-size: 0.8em;
 }
 
 .cell:hover .cell-tooltip {
