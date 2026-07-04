@@ -75,6 +75,7 @@ tbody th {
 .cell {
   position: relative;
   font-family: monospace;
+  text-align: end;
 }
 
 .cell-mirror {

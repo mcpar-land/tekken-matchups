@@ -1,0 +1,41 @@
+{% macro chart(chara_names, cells, hide_mirrors=True) %}
+<table>
+  <thead>
+    <tr>
+      <th></th>
+      {% for chara in chara_names -%}
+      <th class="chara-header">{{chara}}</th>
+      {%- endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for c_a in chara_names -%}
+    <tr>
+      <th scope="row">{{c_a}}</th>
+      {% for c_b in chara_names -%}
+        {%- if (c_a, c_b) in cells %}
+          {%- set c = cells[(c_a, c_b)] -%}
+          {% if c_a != c_b or not hide_mirrors -%}
+            <td class="cell" style="background-color: {{c.background_color()}}">
+              <span>{{c.cell_body()}}</span>
+              {%- set tooltip_body = c.tooltip_body() -%}
+              {% if tooltip_body != None -%}
+                <div class="cell-tooltip">
+                  {{ tooltip_body | safe }}
+                </div>
+              {%- endif %}
+            </td>
+          {%- else -%}
+            {# when it's the mirror, make the cell gray #}
+            <td class="cell cell-mirror"></td>
+          {%- endif %}
+        {%- else -%}
+          {# empty cell when missing a matchup #}
+          <td class="cell"></td>
+        {%- endif %}
+      {%- endfor %}
+    </tr>
+    {%- endfor %}
+  </tbody>
+</table>
+{%- endmacro %}
