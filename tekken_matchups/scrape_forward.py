@@ -77,7 +77,7 @@ def fetch_batch(starting_time: int, data_dir: str) -> int | None:
     file_name = f"{data_dir}/{starting_time}_{current_time}.parquet"
 
     logging.info("writing to      %s", file_name)
-    pl.concat(dfs).sink_parquet(file_name)
+    pl.concat(dfs).sink_parquet(file_name, compression="zstd", compression_level=22)
     logging.info("done writing to %s", file_name)
     return current_time + PAGE_SIZE
 
