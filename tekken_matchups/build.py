@@ -3,6 +3,7 @@ from typing import Any
 from jinja2 import Environment, PackageLoader, select_autoescape
 import os.path
 from tekken_matchups.chart import MatchupCell, TotalGamesCell
+import minify_html
 
 templ_env = Environment(
     loader=PackageLoader("tekken_matchups"),
@@ -50,8 +51,11 @@ def write_page(template_name: str, output_path: str, **params: Any):
     print("making folder", path_folder)
     os.makedirs(path_folder, exist_ok=True)
     template = templ_env.get_template(template_name)
+    body = template.render(**params)
+    body = minify_html.minify(body)
     with open(final_path, "w") as f:
-        f.write(template.render(**params))
+        f.write(body)
+    del body
     print("wrote", final_path)
 
 
