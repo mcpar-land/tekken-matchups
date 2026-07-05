@@ -48,6 +48,132 @@ df_game_counts_by_version = (
 print(df_game_counts_by_version)
 df_game_counts_by_version.write_parquet("./aggregate/game_counts_by_version.parquet")
 
+# ============== aggregate across ALL game versions
+
+# first we get the global winrates
+lf_wins = (
+    lf.select("winner", "p1_chara_id", "p2_chara_id")
+    .select(
+        chara_id=pl.when(pl.col("winner") == 1)
+        .then(pl.col("p1_chara_id"))
+        .when(pl.col("winner") == 2)
+        .then(pl.col("p2_chara_id")),
+    )
+    .group_by("chara_id")
+    .agg(pl.len().alias("n_wins"))
+)
+
+lf_losses = (
+    lf.select(
+        "winner",
+        "p1_chara_id",
+        "p2_chara_id",
+    )
+    .select(
+        chara_id=pl.when(pl.col("winner") == 2)
+        .then(pl.col("p1_chara_id"))
+        .when(pl.col("winner") == 1)
+        .then(pl.col("p2_chara_id")),
+    )
+    .group_by("chara_id")
+    .agg(pl.len().alias("n_losses"))
+)
+
+print("aggregating global winrates...")
+
+df_winrates_global = (
+    lf_wins.join(lf_losses, on=["chara_id"], validate="1:1").select(
+        "chara_id",
+        winrate=pl.col("n_wins") / (pl.col("n_wins") + pl.col("n_losses")) * 100.0
+        - 50.0,
+    )
+).collect()
+
+print(df_winrates_global)
+
+# now we find the per-character winrates
+# and their diff from the average winrate
+# which will give us a true spread
+
+lf_mu_wins = (
+    lf.select(
+        chara_id=pl.when(pl.col("winner") == 1)
+        .then(pl.col("p1_chara_id"))
+        .when(pl.col("winner") == 2)
+        .then(pl.col("p2_chara_id")),
+        chara_id_opp=pl.when(pl.col("winner") == 1)
+        .then(pl.col("p2_chara_id"))
+        .when(pl.col("winner") == 2)
+        .then(pl.col("p1_chara_id")),
+    )
+    .group_by("chara_id", "chara_id_opp")
+    .agg(pl.len().alias("n_wins"))
+)
+
+lf_mu_losses = (
+    lf.select(
+        chara_id=pl.when(pl.col("winner") == 1)
+        .then(pl.col("p2_chara_id"))
+        .when(pl.col("winner") == 2)
+        .then(pl.col("p1_chara_id")),
+        chara_id_opp=pl.when(pl.col("winner") == 1)
+        .then(pl.col("p1_chara_id"))
+        .when(pl.col("winner") == 2)
+        .then(pl.col("p2_chara_id")),
+    )
+    .group_by("chara_id", "chara_id_opp")
+    .agg(pl.len().alias("n_losses"))
+)
+
+print("aggregating matchup winrates...")
+df_result_global = (
+    lf_mu_wins.join(
+        lf_mu_losses,
+        on=["chara_id", "chara_id_opp"],
+        validate="1:1",
+    )
+    .select(
+        "chara_id",
+        "chara_id_opp",
+        n_games=pl.col("n_wins") + pl.col("n_losses"),
+        winrate=pl.col("n_wins") / (pl.col("n_wins") + pl.col("n_losses")) * 100.0
+        - 50.0,
+    )
+    .join(
+        df_winrates_global.lazy(),
+        left_on=["chara_id"],
+        right_on=["chara_id"],
+        suffix="_global",
+    )
+    .join(
+        df_winrates_global.lazy(),
+        left_on=["chara_id_opp"],
+        right_on=["chara_id"],
+        suffix="_global_opp",
+    )
+    .with_columns(
+        matchup_diff=pl.col("winrate")
+        + pl.col("winrate_global_opp")
+        - pl.col("winrate_global")
+    )
+    .drop("winrate", "winrate_global", "winrate_global_opp")
+    .join(
+        df_chara_names.lazy(),
+        on="chara_id",
+    )
+    .join(
+        df_chara_names.lazy(),
+        left_on="chara_id_opp",
+        right_on="chara_id",
+        suffix="_opp",
+    )
+    .collect()
+)
+
+print(df_result_global)
+
+# ============== aggregate across specific game versions
+
 # first we get the global winrates
 lf_wins = (
     lf.select(
@@ -136,7 +262,7 @@ lf_mu_losses = (
 )
 
 print("aggregating matchup winrates...")
-df = (
+df_result_by_version = (
     lf_mu_wins.join(
         lf_mu_losses,
         on=["significant_version", "chara_id", "chara_id_opp"],
@@ -181,6 +307,10 @@ df = (
     )
     .collect()
 )
+
+print(df_result_by_version)
+
+df = pl.concat([df_result_global, df_result_by_version], how="diagonal")
 
 print(df)
 

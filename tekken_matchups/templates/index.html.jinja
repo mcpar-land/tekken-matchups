@@ -1,11 +1,15 @@
 {% extends "base.html.jinja" %}
+{% import 'chart-macro.html.jinja' as chart %}
 {% block content %}
-<h1>Hello, world</h1>
 <ul>
 {% for game_version in game_versions %}
   <li>{{game_version}}</li>
 {% endfor %}
 </ul>
 {% include "goto-dropdowns.html.jinja" %}
-<pre>{{df_matchups}}</pre>
+<h1>Matchups (global)</h1>
+{{ chart.chart(chara_names, cells_matchups) }}
+<br/><br/>
+<h1>Total Games Played (global)</h1>
+{{ chart.chart(chara_names, cells_totals, hide_mirrors=False) }}
 {% endblock %}

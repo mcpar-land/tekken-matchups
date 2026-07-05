@@ -34,7 +34,9 @@ df_matchups = pl.read_parquet("./aggregate/matchup_diffs.parquet").join(
 )
 
 game_versions: list[tuple[str, str]] = (
-    df_versions.filter(pl.col("significant_balance_update"))
+    df_versions.filter(
+        pl.col("significant_balance_update") & pl.col("game_version").is_not_null()
+    )
     .select("game_version", "version_name")
     .unique()
     .sort("game_version")
@@ -53,17 +55,8 @@ def write_page(template_name: str, output_path: str, **params: Any):
     print("wrote", final_path)
 
 
-write_page(
-    "index.html.jinja",
-    "index.html",
-    game_versions=game_versions,
-    df_matchups=df_matchups,
-    selected_game_verison=None,
-)
-
-
-for (significant_version, version_name), df in df_matchups.group_by(
-    "significant_version", "version_name"
+def write_page_with_chart_params(
+    template_name: str, output_path: str, df: pl.DataFrame, **params: Any
 ):
     df = df.select(
         "chara_name",
@@ -99,11 +92,31 @@ for (significant_version, version_name), df in df_matchups.group_by(
     chara_names: list[str] = [*df["chara_name"].unique().sort()]
 
     write_page(
-        "chart.html.jinja",
-        os.path.join("chart", str(significant_version) + ".html"),
-        selected_game_version=significant_version,
-        game_versions=game_versions,
+        template_name,
+        output_path,
         chara_names=chara_names,
         cells_matchups=cells_matchups,
         cells_totals=cells_totals,
+        **params,
+    )
+
+
+write_page_with_chart_params(
+    "index.html.jinja",
+    "index.html",
+    df=df_matchups.filter(pl.col("significant_version").is_null()),
+    selected_game_verison=None,
+    game_versions=game_versions,
+)
+
+# now we do version-specific pages
+for (significant_version, version_name), df in df_matchups.filter(
+    pl.col("significant_version").is_not_null()
+).group_by("significant_version", "version_name"):
+    write_page_with_chart_params(
+        "chart.html.jinja",
+        os.path.join("chart", str(significant_version) + ".html"),
+        df,
+        selected_game_version=significant_version,
+        game_versions=game_versions,
     )

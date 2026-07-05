@@ -5,7 +5,7 @@ dev-webserver:
     live-server ./output -p 5000
     
 dev-build-html:
-    watchexec -e .py -e .jinja -e .css -- just build
+    watchexec -e .py -e .jinja -e .css -e .csv -- just build
 
 build:
     mkdir -p output
