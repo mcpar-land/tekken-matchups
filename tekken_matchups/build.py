@@ -3,7 +3,7 @@ from typing import Any
 from jinja2 import Environment, PackageLoader, select_autoescape
 import os.path
 from tekken_matchups.chart import MatchupCell, TotalGamesCell
-import minify_html
+from bs4 import BeautifulSoup
 
 templ_env = Environment(
     loader=PackageLoader("tekken_matchups"),
@@ -45,7 +45,7 @@ game_versions: list[tuple[str, str]] = (
 )
 
 links = [("Global", "/")] + [
-    (version_name, f"/chart/{game_version}.html")
+    (version_name, f"/{game_version}.html")
     for game_version, version_name in game_versions
 ]
 
@@ -56,8 +56,9 @@ def write_page(template_name: str, output_path: str, **params: Any):
     print("making folder", path_folder)
     os.makedirs(path_folder, exist_ok=True)
     template = templ_env.get_template(template_name)
-    body = template.render(**params)
-    body = minify_html.minify(body)
+    soup = BeautifulSoup(template.render(**params), "html.parser")
+    soup.smooth()
+    body = soup.prettify()
     with open(final_path, "w") as f:
         f.write(body)
     del body
@@ -134,8 +135,8 @@ for (significant_version, version_name), df in df_matchups.filter(
 ).group_by("significant_version", "version_name"):
     write_page_with_chart_params(
         "chart.html.jinja",
-        os.path.join("chart", str(significant_version) + ".html"),
-        f"/chart/{significant_version}.html",
+        f"{significant_version}.html",
+        f"{significant_version}.html",
         title=version_name,
         df=df,
         selected_game_version=significant_version,
