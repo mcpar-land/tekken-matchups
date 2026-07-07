@@ -19,3 +19,6 @@ scrape:
 
 aggregate:
     uv run python -m tekken_matchups.aggregate_matchups
+
+deploy: build
+    git subtree push --prefix output origin gh-pages

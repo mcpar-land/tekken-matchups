@@ -44,8 +44,8 @@ game_versions: list[tuple[str, str]] = (
     .rows(named=False)
 )
 
-links = [("Global", "/")] + [
-    (version_name, f"/{game_version}.html")
+links = [("Global", "index.html")] + [
+    (version_name, f"{game_version}.html")
     for game_version, version_name in game_versions
 ]
 
@@ -56,9 +56,10 @@ def write_page(template_name: str, output_path: str, **params: Any):
     print("making folder", path_folder)
     os.makedirs(path_folder, exist_ok=True)
     template = templ_env.get_template(template_name)
-    soup = BeautifulSoup(template.render(**params), "html.parser")
-    soup.smooth()
-    body = soup.prettify()
+    body = template.render(**params)
+    # soup = BeautifulSoup(body, "html.parser")
+    # soup.smooth()
+    # body = soup.prettify()
     with open(final_path, "w") as f:
         f.write(body)
     del body
@@ -125,7 +126,7 @@ write_page_with_chart_params(
     df=df_matchups.filter(pl.col("significant_version").is_null()),
     selected_game_verison=None,
     game_versions=game_versions,
-    current_page="/",
+    current_page="index.html",
     title="Global",
 )
 
