@@ -2,8 +2,8 @@
   box-sizing: border-box;
 }
 
-body {
-  background: pink;
+section.explainer {
+  max-width: 950px;
 }
 
 th {

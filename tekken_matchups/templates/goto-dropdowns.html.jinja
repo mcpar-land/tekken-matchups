@@ -1,8 +1,0 @@
-<div class="goto-dropdowns">
-  <select name="select-game-version", onchange="location = this.value;">
-    <option {%- if selected_game_version == None -%}selected{%- endif -%}>Select a game version</option>
-    {% for game_version, label in game_versions %}
-      <option value="/chart/{{game_version}}.html" {% if selected_game_version == game_version %}selected{% endif %}>{{ label }}</option>
-    {% endfor %}
-  </select>
-</div>
