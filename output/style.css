@@ -95,6 +95,7 @@ tbody th {
   padding: 4px;
   font-size: 10pt;
   background-color: inherit;
+  user-select: none;
 }
 
 .cell-tooltip div {
