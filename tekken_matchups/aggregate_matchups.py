@@ -41,6 +41,23 @@ lf = (
     .drop("game_version", "significant_rank")
 )
 
+print("aggregating weekly buckets of games played...")
+df_weekly_games_played = (
+    lf_all_data.select(battle_at=pl.from_epoch("battle_at", time_unit="s"))
+    .select(year=pl.col("battle_at").dt.year(), week=pl.col("battle_at").dt.week())
+    .group_by("year", "week")
+    .agg(pl.len().alias("n_games"))
+    .sort("year", "week")
+    .collect()
+)
+
+print(df_weekly_games_played)
+
+output_path = "aggregate/weekly_games_played.parquet"
+print("saving to", output_path)
+df_weekly_games_played.write_parquet(output_path)
+print("done")
+
 print("aggregating games played per game version...")
 df_game_counts_by_version = (
     lf.group_by("significant_version").agg(n_games_for_version=pl.len()).collect()

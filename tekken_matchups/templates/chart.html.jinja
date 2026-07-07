@@ -1,11 +1,12 @@
 {% extends "base.html.jinja" %}
 {% import 'chart-macro.html.jinja' as chart %}
+{% import 'link-list.html.jinja' as link_list %}
 {% block content %}
-{% include "goto-dropdowns.html.jinja" %}
-<h1>Matchups</h1>
+{{ link_list.link_list(links, current_page) }}
+<h1>Matchups ({{title}})</h1>
 {{ chart.chart(chara_names, cells_matchups) }}
 <br/>
 <br/>
-<h1>Total Games Played</h1>
+<h1>Total Games Played ({{title}})</h1>
 {{ chart.chart(chara_names, cells_totals, hide_mirrors=False) }}
 {% endblock %}

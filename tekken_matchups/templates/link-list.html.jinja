@@ -1,0 +1,13 @@
+{% macro link_list(links, current_page) %}
+<div class="link-list">
+{% for link_name, link_href in links %}
+<div class="link-list-link">
+{% if link_href == current_page %}
+  {{link_name}}
+{% else %}
+  <a href="{{link_href}}">{{link_name}}</a>
+{% endif %}
+</div>
+{% endfor %}
+</div>
+{% endmacro %}

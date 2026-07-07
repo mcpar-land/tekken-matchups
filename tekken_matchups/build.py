@@ -44,6 +44,11 @@ game_versions: list[tuple[str, str]] = (
     .rows(named=False)
 )
 
+links = [("Global", "/")] + [
+    (version_name, f"/chart/{game_version}.html")
+    for game_version, version_name in game_versions
+]
+
 
 def write_page(template_name: str, output_path: str, **params: Any):
     final_path = os.path.join("./output", output_path)
@@ -60,7 +65,12 @@ def write_page(template_name: str, output_path: str, **params: Any):
 
 
 def write_page_with_chart_params(
-    template_name: str, output_path: str, df: pl.DataFrame, **params: Any
+    template_name: str,
+    output_path: str,
+    current_page: str,
+    title: str,
+    df: pl.DataFrame,
+    **params: Any,
 ):
     df = df.select(
         "chara_name",
@@ -101,16 +111,21 @@ def write_page_with_chart_params(
         chara_names=chara_names,
         cells_matchups=cells_matchups,
         cells_totals=cells_totals,
+        links=links,
+        current_page=current_page,
+        title=title,
         **params,
     )
 
 
 write_page_with_chart_params(
-    "index.html.jinja",
+    "chart.html.jinja",
     "index.html",
     df=df_matchups.filter(pl.col("significant_version").is_null()),
     selected_game_verison=None,
     game_versions=game_versions,
+    current_page="/",
+    title="Global",
 )
 
 # now we do version-specific pages
@@ -120,7 +135,9 @@ for (significant_version, version_name), df in df_matchups.filter(
     write_page_with_chart_params(
         "chart.html.jinja",
         os.path.join("chart", str(significant_version) + ".html"),
-        df,
+        f"/chart/{significant_version}.html",
+        title=version_name,
+        df=df,
         selected_game_version=significant_version,
         game_versions=game_versions,
     )
