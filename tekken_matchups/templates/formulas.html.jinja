@@ -1,0 +1,35 @@
+{% extends "base.html.jinja" %}
+{% import 'chart-macro.html.jinja' as chart %}
+{% import 'link-list.html.jinja' as link_list %}
+{% block content %}
+{{ link_list.link_list(links, None) }}
+<h1>Calculation Formulas</h1>
+
+<!--
+
+$ W(a) = n "wins for character" a $
+
+$ L(a) = n "losses for character" a $
+
+$ R(a) = W(a) / (W(a) + L(a)) * 100.0 - 50.0 $
+
+$ W(a, b) = n "wins for character" a "versus character" b $
+
+$ L(a, b) = n "losses for character" a "versus character" b $
+
+$ R(a,b) = W(a,b) / (W(a,b) + L(a,b)) * 100.0 - 50.0 $
+
+$ D(a,b) = W(a, b) + W(b) - W(a) $
+
+-->
+
+<math display="block"><mi>𝑊</mi><mrow><mo>(</mo><mi>𝑎</mi><mo>)</mo></mrow><mo>=</mo><mi>𝑛</mi><mspace width="0.2222em"/><mtext>wins for character</mtext><mspace width="0.2222em"/><mi>𝑎</mi></math>
+<math display="block"><mi>𝐿</mi><mrow><mo>(</mo><mi>𝑎</mi><mo>)</mo></mrow><mo>=</mo><mi>𝑛</mi><mspace width="0.2222em"/><mtext>losses for character</mtext><mspace width="0.2222em"/><mi>𝑎</mi></math>
+<math display="block"><mi>𝑅</mi><mrow><mo>(</mo><mi>𝑎</mi><mo>)</mo></mrow><mo>=</mo><mfrac><mrow><mi>𝑊</mi><mrow><mo>(</mo><mi>𝑎</mi><mo>)</mo></mrow></mrow><mrow><mi>𝑊</mi><mrow><mo>(</mo><mi>𝑎</mi><mo>)</mo></mrow><mo>+</mo><mi>𝐿</mi><mrow><mo>(</mo><mi>𝑎</mi><mo>)</mo></mrow></mrow></mfrac><mo lspace="0.2222222222222222em" rspace="0.2222222222222222em">×</mo><mn>100.0</mn><mo>−</mo><mn>50.0</mn></math>
+<math display="block"><mi>𝑊</mi><mrow><mo>(</mo><mrow><mi>𝑎</mi><mo>,</mo><mi>𝑏</mi></mrow><mo>)</mo></mrow><mo>=</mo><mi>𝑛</mi><mspace width="0.2222em"/><mtext>wins for character</mtext><mspace width="0.2222em"/><mi>𝑎</mi><mspace width="0.2222em"/><mtext>versus character</mtext><mspace width="0.2222em"/><mi>𝑏</mi></math>
+<math display="block"><mi>𝐿</mi><mrow><mo>(</mo><mrow><mi>𝑎</mi><mo>,</mo><mi>𝑏</mi></mrow><mo>)</mo></mrow><mo>=</mo><mi>𝑛</mi><mspace width="0.2222em"/><mtext>losses for character</mtext><mspace width="0.2222em"/><mi>𝑎</mi><mspace width="0.2222em"/><mtext>versus character</mtext><mspace width="0.2222em"/><mi>𝑏</mi></math>
+<math display="block"><mi>𝑅</mi><mrow><mo>(</mo><mrow><mi>𝑎</mi><mo>,</mo><mi>𝑏</mi></mrow><mo>)</mo></mrow><mo>=</mo><mfrac><mrow><mi>𝑊</mi><mrow><mo>(</mo><mrow><mi>𝑎</mi><mo>,</mo><mi>𝑏</mi></mrow><mo>)</mo></mrow></mrow><mrow><mi>𝑊</mi><mrow><mo>(</mo><mrow><mi>𝑎</mi><mo>,</mo><mi>𝑏</mi></mrow><mo>)</mo></mrow><mo>+</mo><mi>𝐿</mi><mrow><mo>(</mo><mrow><mi>𝑎</mi><mo>,</mo><mi>𝑏</mi></mrow><mo>)</mo></mrow></mrow></mfrac><mo lspace="0.2222222222222222em" rspace="0.2222222222222222em">×</mo><mn>100.0</mn><mo>−</mo><mn>50.0</mn></math>
+<math display="block"><mi>𝐷</mi><mrow><mo>(</mo><mrow><mi>𝑎</mi><mo>,</mo><mi>𝑏</mi></mrow><mo>)</mo></mrow><mo>=</mo><mi>𝑅</mi><mrow><mo>(</mo><mrow><mi>𝑎</mi><mo>,</mo><mi>𝑏</mi></mrow><mo>)</mo></mrow><mo>+</mo><mi>𝑅</mi><mrow><mo>(</mo><mi>𝑏</mi><mo>)</mo></mrow><mo>−</mo><mi>𝑅</mi><mrow><mo>(</mo><mi>𝑎</mi><mo>)</mo></mrow></math>
+
+
+{% endblock %}

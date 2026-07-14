@@ -143,3 +143,12 @@ for (significant_version, version_name), df in df_matchups.filter(
         selected_game_version=significant_version,
         game_versions=game_versions,
     )
+
+write_page(
+    "formulas.html.jinja",
+    "formulas.html",
+    current_page=None,
+    game_versions=game_versions,
+    links=links,
+    title="Formulas",
+)

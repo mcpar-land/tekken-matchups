@@ -109,3 +109,9 @@ tbody th {
 .cell:hover .cell-tooltip {
   display: block;
 }
+
+math {
+  padding-bottom: 1em;
+  font-size: 16pt;
+  font-family: math;
+}
